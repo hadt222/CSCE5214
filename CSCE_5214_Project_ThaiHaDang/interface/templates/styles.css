@@ -1,0 +1,32 @@
+body { 
+    font-family: Arial, sans-serif; 
+}
+table, th, td { 
+    border: 1px solid black; 
+    border-collapse: collapse; 
+    padding: 5px; 
+}
+.video-container { 
+    display: flex; 
+    align-items: flex-start; 
+    margin-bottom: 20px; 
+}
+.video-player { 
+    margin-right: 20px; 
+}
+.data-container { 
+    flex: 1; 
+    min-width: 300px; 
+}
+.status-normal { 
+    background-color: green; 
+    color: white; 
+    padding: 2px 5px; 
+    border-radius: 5px; 
+}
+.status-speeding { 
+    background-color: red; 
+    color: white; 
+    padding: 2px 5px; 
+    border-radius: 5px; 
+}

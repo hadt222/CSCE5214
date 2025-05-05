@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <h1>Vehicle Speed Tracking Dashboard</h1>
+    <h2>CSCE 5214 Project - Thai Ha Dang</h2>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">Historical Data</a>
+        <a href="#">Settings</a>
+    </nav>    <style>
+        body { font-family: Arial, sans-serif; }
+        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
+        .video-container { 
+            display: flex; 
+            align-items: flex-start; 
+            margin-bottom: 20px; 
+        }
+        .video-player { margin-right: 20px; }
+        .data-container { 
+            flex: 1; 
+            min-width: 300px; 
+        }
+        .status-normal { background-color: green; color: white; padding: 2px 5px; border-radius: 5px; }
+        .status-speeding { background-color: red; color: white; padding: 2px 5px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Vehicle Tracking Viewer</h1>
+    
+    <div class="video-container">
+        <div class="video-player">
+            <h2>Camera 1</h2>
+            <video id="videoPlayer1" width="640" controls>
+                <source src="/video1" type="video/mp4">
+                Your browser does not support HTML5 video.
+            </video>
+        </div>
+        <div class="data-container">
+            <h3>Detected Vehicles (Current Frame)</h3>
+            <table id="vehicleTable1">
+                <thead>
+                    <tr><th>Tracker ID</th><th>Speed (km/h)</th><th>Status</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="video-container">
+        <div class="video-player">
+            <h2>Camera 2</h2>
+            <video id="videoPlayer2" width="640" controls>
+                <source src="/video2" type="video/mp4">
+                Your browser does not support HTML5 video.
+            </video>
+        </div>
+        <div class="data-container">
+            <h3>Detected Vehicles (Current Frame)</h3>
+            <table id="vehicleTable2">
+                <thead>
+                    <tr><th>Tracker ID</th><th>Speed (km/h)</th><th>Status</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let fps = 25;  // Change this if your video has different FPS
+
+        function setupVideoPlayer(videoId, tableId, logData) {
+            const video = document.getElementById(videoId);
+            const tableBody = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+
+            video.addEventListener('timeupdate', function () {
+                const currentFrame = Math.floor(video.currentTime * fps);
+                const frameData = logData[currentFrame];
+
+                // Clear table
+                tableBody.innerHTML = '';
+
+                if (frameData) {
+                    frameData.forEach(entry => {
+                        let row = tableBody.insertRow();
+                        row.insertCell(0).innerText = entry.tracker_id;
+                        row.insertCell(1).innerText = entry.speed;
+                        let statusCell = row.insertCell(2);
+                        let status = entry.speed > 100 ? 'Speeding' : 'Normal';
+                        statusCell.innerHTML = `<span class="status-${status.toLowerCase()}">${status}</span>`;
+                    });
+                } else {
+                    let row = tableBody.insertRow();
+                    let cell = row.insertCell(0);
+                    cell.colSpan = 3;
+                    cell.innerText = "No data for this frame.";
+                }
+            });
+
+            // Trigger initial update
+            video.dispatchEvent(new Event('timeupdate'));
+        }
+
+        // Load log data from server and setup video players
+        Promise.all([
+            fetch('/log_data1').then(response => response.json()),
+            fetch('/log_data2').then(response => response.json())
+        ]).then(([data1, data2]) => {
+            setupVideoPlayer('videoPlayer1', 'vehicleTable1', data1);
+            setupVideoPlayer('videoPlayer2', 'vehicleTable2', data2);
+        }).catch(error => {
+            console.error('Error loading log data:', error);
+        });
+    </script>
+</body>
+</html>
